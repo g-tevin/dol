@@ -1,7 +1,12 @@
 <?php
 require_once 'ClassAutoLoad.php';
 
-$layoutsInstance->heading($conf);
-$layoutsInstance->welcome($conf);
-$formsInstance->login();
-$layoutsInstance->footer($conf);
+$ObjLayouts->header($conf);
+$ObjLayouts->navbar($conf);
+$ObjLayouts->banner($conf);
+
+// Your login form content
+$ObjForms->login();
+
+$ObjLayouts->content($conf);
+$ObjLayouts->footer($conf);

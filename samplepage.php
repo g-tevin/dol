@@ -1,6 +1,5 @@
 <?php
 require_once 'ClassAutoLoad.php';
-
 $ObjLayouts->header($conf);
 $ObjLayouts->navbar($conf);
 $ObjLayouts->banner($conf);

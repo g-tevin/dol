@@ -1,0 +1,11 @@
+{
+    "name": "georgetevin/dol",
+    "autoload": {
+        "psr-4": {
+            "Georgetevin\\Dol\\": "src/"
+        }
+    },
+    "require": {
+        "phpmailer/phpmailer": "^6.10"
+    }
+}
