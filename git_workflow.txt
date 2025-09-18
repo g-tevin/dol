@@ -1,0 +1,21 @@
+# Git Workflow for GeoLink Project
+
+# 1. Initialize git repository (only once when starting project)
+git init
+
+# 2. Add a remote repository on GitHub (only once)
+git remote add origin https://github.com/g-tevin/dol.git
+
+# 3. Stage all changes
+git add .
+
+# 4. Commit changes with a message
+git commit -m "Added mail.php with PHPMailer and DB insert + users.php listing"
+
+# 5. Push to GitHub
+git push -u origin main
+
+# 6. After the first push, for later changes:
+git add .
+git commit -m "Updated mail.php and users.php"
+git push

@@ -1,38 +1,73 @@
 <?php
 //Import PHPMailer classes into the global namespace
-//These must be at the top of your script, not inside a function
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-//Load Composer's autoloader (created by composer, not included with PHPMailer)
+//Load Composer's autoloader
 require __DIR__ . '/../../vendor/autoload.php';
 
-//Create an instance; passing `true` enables exceptions
-$mail = new PHPMailer(true);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $userEmail = $_POST["email"] ?? '';
+    $userName  = $_POST["name"] ?? 'Friend'; 
 
-try {
-    //Server settings
-    $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-    $mail->isSMTP();                                            //Send using SMTP
-    $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-    $mail->Username   = 'tevin.mwangi@strathmore.edu';                     //SMTP username
-    $mail->Password   = 'excs eilc hmms hjgf ';                               //SMTP password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+    // ✅ Validate email
+    if (!filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
+        die("Invalid email address");
+    }
 
-    //Recipients
-    $mail->setFrom('tevin.mwangi@strathmore.edu', 'George Tevin');
-    $mail->addAddress('georgetevin02@gmail.com', 'Persephone');     //Add a recipient
+    // ✅ NEW: Connect to database (update with your credentials)
+    $conn = new mysqli("localhost", "root", "0000", "dbpro");
+    if ($conn->connect_error) {
+        die("DB Connection failed: " . $conn->connect_error);
+    }
 
-    //Content
-    $mail->isHTML(true);                                  //Set email format to HTML
-    $mail->Subject = 'Mickey Chloe';
-    $mail->Body    = 'Pressure? What pressure!.';
+    // ✅ NEW: Insert user into DB
+    $stmt = $conn->prepare("INSERT INTO users (username, email) VALUES (?, ?)");
+    $stmt->bind_param("ss", $userName, $userEmail);
+    if (!$stmt->execute()) {
+        echo "Database error: " . $stmt->error;
+    }
+    $stmt->close();
+    $conn->close();
 
-    $mail->send();
-    echo 'Message has been sent';
-} catch (Exception $e) {
-    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    //Create an instance; passing `true` enables exceptions
+    $mail = new PHPMailer(true);
+
+    try {
+        //Server settings
+        $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      
+        $mail->isSMTP();                                            
+        $mail->Host       = 'smtp.gmail.com';                       
+        $mail->SMTPAuth   = true;                                   
+        $mail->Username   = 'tevin.mwangi@strathmore.edu';          
+        $mail->Password   = 'excs eilc hmms hjgf';   // ✅ removed trailing space
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            
+        $mail->Port       = 465;                                    
+
+        //Recipients
+        $mail->setFrom('tevin.mwangi@strathmore.edu', 'George Tevin');
+        $mail->addAddress($userEmail, $userName);     //Send to user input
+
+        //Content
+        $mail->isHTML(true);                                  
+        $mail->Subject = 'Welcome to GeoLink!';
+        $mail->Body    = "Hello " . htmlspecialchars($userName) .
+         ",<br><br>Welcome to the Project
+         <br> You are now a valued member of GeoLink and
+         as such we will help you to help us reach a better future! 
+         <br><br>Warm Regards, <br> George Tevin Muigai"; // ✅ fixed variable
+
+        $mail->send();
+        echo 'Message has been sent to ' . htmlspecialchars($userEmail);
+    } catch (Exception $e) {
+        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    }
+} else {
+    // Simple form to collect name + email
+    echo "<form method='POST'>
+            <input type='text' name='name' placeholder='Enter your name' required><br><br>
+            <input type='email' name='email' placeholder='Enter your email' required><br><br>
+            <button type='submit'>Send Test Email</button>
+          </form>";
 }
